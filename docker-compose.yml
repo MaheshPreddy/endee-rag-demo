@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  endee:
+    image: endeeio/endee-server:latest
+    container_name: endee-server
+    ports:
+      - "8080:8080"
+    environment:
+      NDD_NUM_THREADS: 0 # Automatic thread detection
+      NDD_AUTH_TOKEN: "" # Empty = no authentication (set if needed)
+    volumes:
+      - endee-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: FastAPI server (if you want to run it in the same compose network)
+  # Uncomment to use
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: endee-rag-api
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     ENDEE_BASE_URL: http://endee:8080
+  #     ENDEE_COLLECTION: docs
+  #   depends_on:
+  #     endee:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+
+volumes:
+  endee-data:
+    driver: local
